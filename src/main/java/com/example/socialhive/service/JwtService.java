@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -22,20 +23,25 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private long EXPIRATION_TIME;
 
+    // ================= TOKEN GENERATION =================
     public String generateToken(UserDetails userDetails) {
+        Instant now = Instant.now();
+
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .subject(userDetails.getUsername())
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(EXPIRATION_TIME)))
                 .signWith(getSigningKey())
                 .compact();
     }
 
+    // ================= TOKEN VALIDATION =================
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 
+    // ================= CLAIM EXTRACTION =================
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -53,6 +59,7 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
+    // ================= JWT PARSING =================
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .setSigningKey(getSigningKey())
@@ -61,6 +68,7 @@ public class JwtService {
                 .getPayload();
     }
 
+    // ================= SIGNING KEY =================
     private Key getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
