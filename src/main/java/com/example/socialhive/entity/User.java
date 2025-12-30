@@ -8,7 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-//import java.util.List;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -40,6 +40,6 @@ public class User {
 
     private Boolean isActive = true;
 
-//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-//    private List<SocialAccount> socialAccounts;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<SocialAccount> socialAccounts;
 }
