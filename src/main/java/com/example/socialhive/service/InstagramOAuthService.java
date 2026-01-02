@@ -24,10 +24,10 @@ import java.util.Base64;
 public class InstagramOAuthService {
 
     private final UserRepository user;
-    @Value("${instagram.app-id}")
+    @Value("2129253507609114")
     private String appId;
 
-    @Value("${instagram.app-secret}")
+    @Value("f88cd060e37f504aba1a144cd73f3d23")
     private String appSecret;
 
     @Value("${instagram.redirect-uri}")
@@ -39,10 +39,10 @@ public class InstagramOAuthService {
         String state = Base64.getUrlEncoder()
                 .encodeToString((userId + ":" + System.currentTimeMillis()).getBytes());
 
-        return "https://api.instagram.com/oauth/authorize?" +
+        return "https://www.facebook.com/dialog/oauth?" +
                 "client_id=" + appId +
                 "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
-                "&scope=user_profile,user_media" +
+                "&scope=business_management,instagram_manage_comments,pages_show_list" +
                 "&response_type=code" +
                 "&state=" + state;
     }
@@ -99,17 +99,17 @@ public class InstagramOAuthService {
         params.add("code", code);
 
         return restTemplate.postForObject(
-                "https://api.instagram.com/oauth/access_token",
+                "https://graph.facebook.com/v20.0/oauth/access_token",
                 params,
                 InstagramAccessToken.class
         );
     }
 
     private InstagramLongLivedToken getLongLivedToken(String shortLivedToken) {
-        String url = "https://graph.instagram.com/access_token?" +
-                "grant_type=ig_exchange_token" +
+        String url = "https://graph.facebook.com/v20.0/oauth/access_token?" +
+                "grant_type=fb_exchange_token" + "&client_id="+appId+
                 "&client_secret=" + appSecret +
-                "&access_token=" + shortLivedToken;
+                "&fb_exchange_token=" + shortLivedToken;
 
         RestTemplate restTemplate = new RestTemplate();
         return restTemplate.getForObject(url, InstagramLongLivedToken.class);
