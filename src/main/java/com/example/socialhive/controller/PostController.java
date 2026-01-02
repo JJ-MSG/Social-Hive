@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostController {
 
+
     private final PostService postService;
     private final UserService userService;
 

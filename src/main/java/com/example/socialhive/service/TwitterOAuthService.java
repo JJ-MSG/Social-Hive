@@ -34,7 +34,7 @@ public class TwitterOAuthService {
     @Value("${twitter.client-secret}")
     private String clientSecret;
 
-    @Value("${http://localhost:8080/api/accounts/callback/twitter}")
+    @Value("${twitter.callback-url}")
     private String callbackUrl;
 
     private final SocialAccountRepository accountRepository;
@@ -58,6 +58,10 @@ public class TwitterOAuthService {
         return Long.parseLong(decoded.split(":")[0]);
     }
 
+
+
+
+
     private LocalDateTime calculateExpiry(Long expiresIn) {
         return LocalDateTime.from(java.time.Instant.now().plusSeconds(expiresIn != null ? expiresIn : 0));
     }
@@ -67,6 +71,9 @@ public class TwitterOAuthService {
         // Extract user ID from state
         Long userId = extractUserIdFromState(state);
 
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         // Exchange code for access token
         TwitterAccessToken tokenResponse = exchangeCodeForToken(code);
 
@@ -75,7 +82,7 @@ public class TwitterOAuthService {
 
         // Save social account
         SocialAccount account = new SocialAccount();
-        account.setUser((User) userRepository);
+        account.setUser(user);
         account.setPlatform(Platform.TWITTER);
         account.setAccountName(profile.getUsername());
         account.setAccountId(profile.getId());
@@ -97,7 +104,9 @@ public class TwitterOAuthService {
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("code", code);
-        params.add("grant_type", "authorization_code");
+        params.add("client_id", clientId);
+
+//        params.add("grant_type", "authorization_code");
         params.add("redirect_uri", callbackUrl);
         params.add("code_verifier", "challenge");
 
@@ -108,6 +117,10 @@ public class TwitterOAuthService {
                 request,
                 TwitterAccessToken.class
         );
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("Failed to exchange token with Twitter");
+        }
+
 
         return response.getBody();
     }

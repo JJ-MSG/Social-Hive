@@ -35,6 +35,7 @@ public class AccountController {
     private final UserService userService;
     private final SocialAccountRepository accountRepository;
 
+
     @PostMapping("/connect/twitter")
     public ResponseEntity<AuthResponse> connectTwitter(@AuthenticationPrincipal UserDetails userDetails) {
         User user = userService.getUserFromDetails(userDetails);
