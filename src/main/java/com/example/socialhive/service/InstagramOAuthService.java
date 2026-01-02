@@ -30,7 +30,7 @@ public class InstagramOAuthService {
     @Value("f88cd060e37f504aba1a144cd73f3d23")
     private String appSecret;
 
-    @Value("${instagram.redirect-uri}")
+    @Value("http://localhost:8080/api/accounts/callback/instagram")
     private String redirectUri;
 
     private final SocialAccountRepository accountRepository;
