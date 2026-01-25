@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @RequiredArgsConstructor
@@ -44,5 +45,11 @@ public class ApplicationConfig {
             AuthenticationConfiguration config
     ) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    // ================= REST TEMPLATE =================
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 }
