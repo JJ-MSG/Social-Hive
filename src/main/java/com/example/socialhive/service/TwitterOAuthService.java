@@ -10,6 +10,7 @@ import com.example.socialhive.repository.SocialAccountRepository;
 import com.example.socialhive.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TwitterOAuthService {
@@ -58,6 +60,8 @@ public class TwitterOAuthService {
     // ================= CALLBACK =================
     public SocialAccount handleCallback(String code, String state) {
 
+        log.info("Twitter callback triggered. Code: {}", code);
+        log.info("State received: {}", state);
         Long userId = extractUserIdFromState(state);
 
         User user = userRepository.findById(userId)
@@ -97,14 +101,21 @@ public class TwitterOAuthService {
         HttpEntity<MultiValueMap<String, String>> request =
                 new HttpEntity<>(params, headers);
 
-        ResponseEntity<TwitterAccessToken> response =
-                restTemplate.postForEntity(
-                        "https://api.twitter.com/2/oauth2/token",
-                        request,
-                        TwitterAccessToken.class
-                );
+        try {
+            ResponseEntity<TwitterAccessToken> response =
+                    restTemplate.postForEntity(
+                            "https://api.twitter.com/2/oauth2/token",
+                            request,
+                            TwitterAccessToken.class
+                    );
 
-        return response.getBody();
+            log.info("Token exchange success: {}", response.getStatusCode());
+            return response.getBody();
+
+        } catch (Exception e) {
+            log.error("Token exchange failed: {}", e.getMessage());
+            throw e;
+        }
     }
 
     // ================= USER PROFILE =================
